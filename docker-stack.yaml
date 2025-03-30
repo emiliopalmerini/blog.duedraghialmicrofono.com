@@ -1,0 +1,25 @@
+ services:
+  web:
+    image: klakegg/hugo:latest # Usa un'immagine Hugo preesistente
+    command: hugo server --bind=0.0.0.0 --port=80 --disableFastRender
+    volumes:
+      - .:/src
+      - hugo_public:/src/public
+    working_dir: /src
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.your-hugo-site.rule=Host(`duedraghialmicrofono.com`)"
+      - "traefik.http.routers.your-hugo-site.entrypoints=websecure"
+      - "traefik.http.routers.your-hugo-site.tls.certresolver=myresolver"
+      - "traefik.http.services.your-hugo-site.loadbalancer.server.port=1313"
+    networks:
+      - poseidon_traefik_proxy
+    deploy:
+      replicas: 1
+
+ volumes:
+  hugo_public:
+ 
+ networks:
+  poseidon_traefik_proxy:
+    external: true

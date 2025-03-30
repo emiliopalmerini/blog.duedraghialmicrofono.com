@@ -1,0 +1,38 @@
+name: build & deploy
+on:
+ push:
+   branches:
+     - "main"
+
+permissions:
+  packages: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        repository: emiliopalmerini/duedraghialmicrofono.com
+        token: ${{ secrets.ACCESS_TOKEN }}
+        submodules: true
+    - name: create env file
+      run: |
+        echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./envfile
+    - name: Setup Hugo
+      uses: peaceiris/actions-hugo@v3
+      with:
+        hugo-version: "latest"
+        extended: true
+    - name: Build website with Hugo
+      run: hugo --minify
+    - name: Docker Stack Deploy
+      uses: cssnr/stack-deploy-action@v1
+      with:
+        name: duedraghi-site
+        file: docker-stack.yaml
+        host: duedraghialmicrofono.com 
+        user: deploy
+        ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        env_file: ./envfile
