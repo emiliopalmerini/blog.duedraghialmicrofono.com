@@ -8,11 +8,12 @@
     working_dir: /src
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.duedraghialmicrofono.rule=Host(`duedraghialmicrofono.com`)"
-      - "traefik.http.routers.duedraghialmicrofono.entrypoints=websecure"
-      - "traefik.http.routers.duedraghialmicrofono.tls.certresolver=myresolver"
-      - "traefik.http.services.duedraghialmicrofono.loadbalancer.server.port=1313"
-    networks:
+      - "traefik.http.services.web.loadbalancer.server.port=1313"
+      - "traefik.http.routers.web.rule=Host(`duedraghialmicrofono.com`)"
+      - "traefik.http.routers.web.entrypoints=websecure"
+      - "traefik.http.routers.web.tls.certresolver=myresolver"
+
+networks:
       - poseidon_traefik_proxy
     deploy:
       replicas: 1
