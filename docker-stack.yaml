@@ -1,7 +1,7 @@
  services:
   web:
     image: klakegg/hugo:latest # Usa un'immagine Hugo preesistente
-    command: hugo server --bind=0.0.0.0 --port=80 --disableFastRender
+    command: hugo server --bind=0.0.0.0 --port=1313 --disableFastRender
     volumes:
       - .:/src
       - hugo_public:/src/public
