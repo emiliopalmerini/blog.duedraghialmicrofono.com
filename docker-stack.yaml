@@ -8,10 +8,10 @@
     working_dir: /src
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.your-hugo-site.rule=Host(`duedraghialmicrofono.com`)"
-      - "traefik.http.routers.your-hugo-site.entrypoints=websecure"
-      - "traefik.http.routers.your-hugo-site.tls.certresolver=myresolver"
-      - "traefik.http.services.your-hugo-site.loadbalancer.server.port=1313"
+      - "traefik.http.routers.duedraghialmicrofono.rule=Host(`duedraghialmicrofono.com`)"
+      - "traefik.http.routers.duedraghialmicrofono.entrypoints=websecure"
+      - "traefik.http.routers.duedraghialmicrofono.tls.certresolver=myresolver"
+      - "traefik.http.services.duedraghialmicrofono.loadbalancer.server.port=1313"
     networks:
       - poseidon_traefik_proxy
     deploy:
