@@ -1,11 +1,12 @@
 services:
   website:
-    image: nginx:alpine
-    volumes:
-      - hugo_content:/usr/share/nginx/html:ro
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    image: ghcr.io/emiliopalmerini/duedraghialmicrofono.com/website:latest
     deploy:
       replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
       labels:
         traefik.enable: "true"
         traefik.http.middlewares.website-ratelimit.ratelimit.average: "20"
@@ -14,8 +15,10 @@ services:
         traefik.http.routers.website.rule: "Host(`duedraghialmicrofono.com`) && !Method(`POST`)"
         traefik.http.routers.website.tls.certresolver: "myresolver"
         traefik.http.services.website.loadbalancer.server.port: "80"
+    networks:
+      - traefik-public
 
-volumes:
-  hugo_content:
-    name: duedraghi-site_hugo_content
+networks:
+  traefik-public:
+    external: true
 
