@@ -1,8 +1,8 @@
 name: build & deploy
 on:
- push:
-   branches:
-     - "main"
+  push:
+    branches:
+      - "main"
 
 permissions:
   packages: write
@@ -17,22 +17,46 @@ jobs:
         repository: emiliopalmerini/duedraghialmicrofono.com
         token: ${{ secrets.ACCESS_TOKEN }}
         submodules: true
+    
     - name: create env file
       run: |
         echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./envfile
+    
     - name: Setup Hugo
       uses: peaceiris/actions-hugo@v3
       with:
         hugo-version: "latest"
         extended: true
+    
     - name: Build website with Hugo
       run: hugo --minify
-    - name: Docker Stack Deploy
-      uses: cssnr/stack-deploy-action@v1
+    
+    - name: Create nginx config
+      run: |
+        echo 'server { listen 80; server_name duedraghialmicrofono.com; location / { root /usr/share/nginx/html; index index.html; try_files $uri $uri/ =404; } }' > nginx.conf
+    
+    - name: Upload to server
+      uses: appleboy/scp-action@master
       with:
-        name: duedraghi-site
-        file: docker-stack.yaml
-        host: duedraghialmicrofono.com 
-        user: deploy
-        ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
-        env_file: ./envfile
+        host: duedraghialmicrofono.com
+        username: deploy
+        key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        source: "public/*,nginx.conf,docker-stack.yaml"
+        target: "/tmp/hugo-deploy"
+        strip_components: 0
+    
+    - name: Copy to volume and deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: duedraghialmicrofono.com
+        username: deploy
+        key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+        script: |
+          # Create volume if it doesn't exist
+          docker volume create duedraghi-site_hugo_content || true
+          
+          # Copy files to volume using a temporary container
+          docker run --rm -v duedraghi-site_hugo_content:/content -v /tmp/hugo-deploy/public:/src alpine sh -c "rm -rf /content/* && cp -r /src/* /content/"
+          
+          # Deploy the stack
+          cd /tmp/hugo-deploy && docker stack deploy -c docker-stack.yaml duedraghi-site
